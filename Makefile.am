@@ -11,7 +11,7 @@ GAPINSTALLLIB = $(BINARCHDIR)/zmqing.so
 
 lib_LTLIBRARIES = zmqing.la
 
-zmqing_la_SOURCES = src/zmqing.c
+zmqing_la_SOURCES = src/zmqing.c src/zmqgap.c src/zmqgap.h
 zmqing_la_CPPFLAGS = $(GAP_CPPFLAGS) -DCONFIG_H
 zmqing_la_LDFLAGS = -module -avoid-version
 if SYS_IS_CYGWIN
