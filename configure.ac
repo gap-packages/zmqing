@@ -65,6 +65,56 @@ else
 fi
 
 dnl ##
+dnl ## Detect ZeroMQ
+dnl ##
+
+was_libzmq_check_lib_detected=no
+
+PKG_CHECK_MODULES([libzmq], [libzmq >= 3.0.0],
+    [
+        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $libzmq_LIBS"
+    ],
+    [
+        AC_ARG_WITH([libzmq],
+            [
+                AS_HELP_STRING([--with-libzmq],
+                [Specify libzmq prefix])
+            ],
+            [search_libzmq="yes"],
+            [])
+
+        libzmq_synthetic_cflags=""
+        libzmq_synthetic_libs="-lzmq"
+
+        if test "x$search_libzmq" = "xyes"; then
+            if test -r "${with_libzmq}/include/zmq.h"; then
+                libzmq_synthetic_cflags="-I${with_libzmq}/include"
+                libzmq_synthetic_libs="-L${with_libzmq}/lib -lzmq"
+            else
+                AC_MSG_ERROR([${with_libzmq}/include/zmq.h not found. Please check libzmq prefix])
+            fi
+        fi
+
+        AC_CHECK_LIB([zmq], [zmq_init],
+            [
+                CFLAGS="${libzmq_synthetic_cflags} ${CFLAGS}"
+                LDFLAGS="${libzmq_synthetic_libs} ${LDFLAGS}"
+                LIBS="${libzmq_synthetic_libs} ${LIBS}"
+
+                AC_SUBST([libzmq_CFLAGS],[${libzmq_synthetic_cflags}])
+                AC_SUBST([libzmq_LIBS],[${libzmq_synthetic_libs}])
+                was_libzmq_check_lib_detected=yes
+                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lzmq"
+            ],
+            [AC_MSG_ERROR([cannot link with -lzmq, install libzmq])])
+    ])
+
+if test "x$was_libzmq_check_lib_detected" = "xno"; then
+    CFLAGS="${libzmq_CFLAGS} ${CFLAGS}"
+    LIBS="${libzmq_LIBS} ${LIBS}"
+fi
+
+dnl ##
 dnl ## Rebuild configure if VERSION file changes
 dnl ##
 AC_SUBST([CONFIG_STATUS_DEPENDENCIES], ['$(top_srcdir)/VERSION'])
