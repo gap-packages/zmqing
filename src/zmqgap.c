@@ -1,28 +1,22 @@
-#ifdef WITH_ZMQ
-
 #include "src/compiled.h"
 #include "zmq.h"
+#include "zmqgap.h"
 
-static GVarDescriptor TYPE_ZMQ_SOCKETGVar;
+// At the moment this is HPC-GAP only code
+// static GVarDescriptor TYPE_ZMQ_SOCKETGVar;
+
 static Obj TYPE_ZMQ_SOCKET;
 
 static Obj TypeZmqSocket() {
-  /* multiple threads may initialize this concurrently, but that is safe */
-  if (!TYPE_ZMQ_SOCKET)
-    TYPE_ZMQ_SOCKET = GVarObj(&TYPE_ZMQ_SOCKETGVar);
-  return TYPE_ZMQ_SOCKET;
+    /* in HPC-GAP multiple threads may initialize this
+       concurrently, but that is safe */
+    if (!TYPE_ZMQ_SOCKET) {
+        // TYPE_ZMQ_SOCKET = GVarObj(&TYPE_ZMQ_SOCKETGVar);
+    }
+    return TYPE_ZMQ_SOCKET;
 }
 
-#if ZMQ_VERSION_MAJOR == 2
-#define zmq_sendmsg zmq_send
-#define zmq_recvmsg zmq_recv
-#endif
-
-#if ZMQ_VERSION_MAJOR == 2
-  typedef int64_t int_opt_t;
-#else
-  typedef int int_opt_t;
-#endif
+typedef int int_opt_t;
 
 static void *ZmqContext;
 
@@ -94,17 +88,19 @@ static void SetSocketURI(Obj socket, Obj uri) {
   uri_mem = (char *) ADDR_OBJ(socket)[ZMQ_DAT_URI_OFF];
   if (uri_mem) {
     /* FreeMemoryBlock(uri_mem); */
+      free(uri_mem);
+      ADDR_OBJ(socket)[ZMQ_DAT_URI_OFF] = 0L;
   }
   if (!uri)
-    ADDR_OBJ(socket)[ZMQ_DAT_URI_OFF] = (Obj) 0;
+      ADDR_OBJ(socket)[ZMQ_DAT_URI_OFF] = (Obj) 0;
   else {
-    uri_mem = AllocateMemoryBlock(GET_LEN_STRING(uri)+1);
-    memcpy(uri_mem, CSTR_STRING(uri), GET_LEN_STRING(uri));
-    uri_mem[GET_LEN_STRING(uri)] = '\0';
-    ADDR_OBJ(socket)[ZMQ_DAT_URI_OFF] = (Obj) uri_mem;
+      // uri_mem = AllocateMemoryBlock(GET_LEN_STRING(uri)+1);
+      uri_mem = malloc(GET_LEN_STRING(uri)+1);
+      memcpy(uri_mem, CSTR_STRING(uri), GET_LEN_STRING(uri));
+      uri_mem[GET_LEN_STRING(uri)] = '\0';
+      ADDR_OBJ(socket)[ZMQ_DAT_URI_OFF] = (Obj) uri_mem;
   }
 }
-
 
 static void ZmqError(char *funcname) {
   ErrorQuit("%s: %s", (Int) funcname, (Int) zmq_strerror(errno));
@@ -560,40 +556,44 @@ static Obj FuncZmqPoll(Obj self, Obj in, Obj out, Obj timeout) {
 }
 
 
+typedef Obj (* GVarFunc)(/*arguments*/);
 
-#define FUNC_DEF(name, narg, argdesc) \
-  { #name, narg, argdesc, Func ## name, __FILE__ ":Func" #name }
+#define GVAR_FUNC_TABLE_ENTRY(srcfile, name, nparam, params)  \
+    {#name, nparam,                                           \
+            params,                                           \
+            (GVarFunc)"Func" #name,                           \
+            srcfile ":Func" #name }
 
 static StructGVarFunc GVarFuncs [] = {
-  FUNC_DEF(ZmqSocket, 1, "string describing socket type"),
-  FUNC_DEF(ZmqBind, 2, "zmq socket, local address"),
-  FUNC_DEF(ZmqConnect, 2, "zmq socket, remote address"),
-  FUNC_DEF(ZmqSend, 2, "zmq socket, string|list of strings"),
-  FUNC_DEF(ZmqReceive, 1, "zmq socket"),
-  FUNC_DEF(ZmqReceiveList, 1, "zmq socket"),
-  FUNC_DEF(ZmqClose, 1, "zmq socket"),
-  FUNC_DEF(ZmqPoll, 3, "list of input sockets, list of output sockets, timeout (ms)"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSocket, 1, "string describing socket type"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqBind, 2, "zmq socket, local address"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqConnect, 2, "zmq socket, remote address"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSend, 2, "zmq socket, string|list of strings"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqReceive, 1, "zmq socket"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqReceiveList, 1, "zmq socket"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqClose, 1, "zmq socket"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqPoll, 3, "list of input sockets, list of output sockets, timeout (ms)"),
 
-  FUNC_DEF(ZmqIsOpen, 1, "zmq socket"),
-  FUNC_DEF(ZmqIsBound, 1, "zmq socket"),
-  FUNC_DEF(ZmqIsConnected, 1, "zmq socket"),
-  FUNC_DEF(ZmqSocketURI, 1, "zmq socket"),
-  FUNC_DEF(ZmqSocketType, 1, "zmq socket"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqIsOpen, 1, "zmq socket"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqIsBound, 1, "zmq socket"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqIsConnected, 1, "zmq socket"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSocketURI, 1, "zmq socket"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSocketType, 1, "zmq socket"),
 
-  FUNC_DEF(ZmqSetIdentity, 2, "zmq socket, string"),
-  FUNC_DEF(ZmqSetSendBufferSize, 2, "zmq socket, size"),
-  FUNC_DEF(ZmqSetReceiveBufferSize, 2, "zmq socket, size"),
-  FUNC_DEF(ZmqSetSendCapacity, 2, "zmq socket, count"),
-  FUNC_DEF(ZmqSetReceiveCapacity, 2, "zmq socket, count"),
-  FUNC_DEF(ZmqHasMore, 1, "zmq socket"),
-  FUNC_DEF(ZmqGetIdentity, 1, "zmq socket"),
-  FUNC_DEF(ZmqGetSendBufferSize, 1, "zmq socket"),
-  FUNC_DEF(ZmqGetReceiveBufferSize, 1, "zmq socket"),
-  FUNC_DEF(ZmqGetSendCapacity, 1, "zmq socket"),
-  FUNC_DEF(ZmqGetReceiveCapacity, 1, "zmq socket"),
-  FUNC_DEF(ZmqSubscribe, 2, "zmq socket, string"),
-  FUNC_DEF(ZmqUnsubscribe, 2, "zmq socket, string"),
-  0
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSetIdentity, 2, "zmq socket, string"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSetSendBufferSize, 2, "zmq socket, size"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSetReceiveBufferSize, 2, "zmq socket, size"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSetSendCapacity, 2, "zmq socket, count"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSetReceiveCapacity, 2, "zmq socket, count"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqHasMore, 1, "zmq socket"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqGetIdentity, 1, "zmq socket"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqGetSendBufferSize, 1, "zmq socket"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqGetReceiveBufferSize, 1, "zmq socket"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqGetSendCapacity, 1, "zmq socket"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqGetReceiveCapacity, 1, "zmq socket"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSubscribe, 2, "zmq socket, string"),
+  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqUnsubscribe, 2, "zmq socket, string"),
+  { 0 }
 };
 
 /******************************************************************************
@@ -603,7 +603,7 @@ static Int InitKernel ( StructInitInfo *module )
 {
     /* init filters and functions                                          */
     InitHdlrFuncsFromTable( GVarFuncs );
-    DeclareGVar(&TYPE_ZMQ_SOCKETGVar, "TYPE_ZMQ_SOCKET");
+//    DeclareGVar(&TYPE_ZMQ_SOCKETGVar, "TYPE_ZMQ_SOCKET");
 
     /* return success                                                      */
     return 0;
@@ -629,14 +629,12 @@ static Int InitLibrary ( StructInitInfo *module )
   return 0;
 }
 
-
 /******************************************************************************
-*F  InitInfo()  . . . . . . . . . . . . . . . . . table of init functions
+*F  InitInfopl()  . . . . . . . . . . . . . . . . . table of init functions
 */
-
 static StructInitInfo module = {
- /* type        = */ MODULE_BUILTIN,
- /* name        = */ "zmq",
+ /* type        = */ MODULE_DYNAMIC,
+ /* name        = */ "zmqing",
  /* revision_c  = */ 0,
  /* revision_h  = */ 0,
  /* version     = */ 0,
@@ -649,11 +647,7 @@ static StructInitInfo module = {
  /* postRestore = */ 0
 };
 
-StructInitInfo *InitInfoZmq ( void )
+StructInitInfo *Init__Dynamic( void )
 {
-  return &module;
+    return &module;
 }
-
-
-
-#endif // WITH_ZMQ
