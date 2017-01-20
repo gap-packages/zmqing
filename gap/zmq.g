@@ -15,6 +15,7 @@ if not IsBound(SynchronisationFamily) then
 fi;
 
 DeclareFilter("IsZmqSocket", IsObject and IsInternalRep);
+
 BindGlobal("TYPE_ZMQ_SOCKET", NewType(SynchronizationFamily, IsZmqSocket));
 
 BindGlobal("ZmqAttach", function(socket, addr)

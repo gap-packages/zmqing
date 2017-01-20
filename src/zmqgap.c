@@ -11,7 +11,7 @@ static Obj TypeZmqSocket() {
     /* in HPC-GAP multiple threads may initialize this
        concurrently, but that is safe */
     if (!TYPE_ZMQ_SOCKET) {
-        // TYPE_ZMQ_SOCKET = GVarObj(&TYPE_ZMQ_SOCKETGVar);
+      // TYPE_ZMQ_SOCKET = GVarObj(&TYPE_ZMQ_SOCKETGVar);
     }
     return TYPE_ZMQ_SOCKET;
 }
@@ -176,6 +176,7 @@ static Obj FuncZmqSocket(Obj self, Obj type) {
     BadArgType(type, "ZmqSocket", 1, "string specifying the socket type");
   tstring = CSTR_STRING(type);
   t = -1;
+
   switch (tstring[0]) {
     case 'D':
       if (!strcmp(tstring, "DEALER")) t = ZMQ_DEALER;
@@ -555,45 +556,50 @@ static Obj FuncZmqPoll(Obj self, Obj in, Obj out, Obj timeout) {
   return result;
 }
 
+Obj FuncZmqTest(Obj self)
+{
+    return 0;
+}
 
-typedef Obj (* GVarFunc)(/*arguments*/);
+typedef Obj (* GVarFuncType)(/*arguments*/);
 
 #define GVAR_FUNC_TABLE_ENTRY(srcfile, name, nparam, params)  \
     {#name, nparam,                                           \
             params,                                           \
-            (GVarFunc)"Func" #name,                           \
+            (GVarFuncType) Func ## name,                      \
             srcfile ":Func" #name }
 
 static StructGVarFunc GVarFuncs [] = {
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSocket, 1, "string describing socket type"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqBind, 2, "zmq socket, local address"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqConnect, 2, "zmq socket, remote address"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSend, 2, "zmq socket, string|list of strings"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqReceive, 1, "zmq socket"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqReceiveList, 1, "zmq socket"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqClose, 1, "zmq socket"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqPoll, 3, "list of input sockets, list of output sockets, timeout (ms)"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqTest, 0, "nothing"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSocket, 1, "string describing socket type"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqBind, 2, "zmq socket, local address"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqConnect, 2, "zmq socket, remote address"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSend, 2, "zmq socket, string|list of strings"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqReceive, 1, "zmq socket"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqReceiveList, 1, "zmq socket"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqClose, 1, "zmq socket"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqPoll, 3, "list of input sockets, list of output sockets, timeout (ms)"),
 
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqIsOpen, 1, "zmq socket"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqIsBound, 1, "zmq socket"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqIsConnected, 1, "zmq socket"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSocketURI, 1, "zmq socket"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSocketType, 1, "zmq socket"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqIsOpen, 1, "zmq socket"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqIsBound, 1, "zmq socket"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqIsConnected, 1, "zmq socket"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSocketURI, 1, "zmq socket"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSocketType, 1, "zmq socket"),
 
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSetIdentity, 2, "zmq socket, string"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSetSendBufferSize, 2, "zmq socket, size"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSetReceiveBufferSize, 2, "zmq socket, size"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSetSendCapacity, 2, "zmq socket, count"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSetReceiveCapacity, 2, "zmq socket, count"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqHasMore, 1, "zmq socket"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqGetIdentity, 1, "zmq socket"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqGetSendBufferSize, 1, "zmq socket"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqGetReceiveBufferSize, 1, "zmq socket"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqGetSendCapacity, 1, "zmq socket"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqGetReceiveCapacity, 1, "zmq socket"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSubscribe, 2, "zmq socket, string"),
-  GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqUnsubscribe, 2, "zmq socket, string"),
-  { 0 }
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSetIdentity, 2, "zmq socket, string"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSetSendBufferSize, 2, "zmq socket, size"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSetReceiveBufferSize, 2, "zmq socket, size"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSetSendCapacity, 2, "zmq socket, count"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSetReceiveCapacity, 2, "zmq socket, count"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqHasMore, 1, "zmq socket"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqGetIdentity, 1, "zmq socket"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqGetSendBufferSize, 1, "zmq socket"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqGetReceiveBufferSize, 1, "zmq socket"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqGetSendCapacity, 1, "zmq socket"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqGetReceiveCapacity, 1, "zmq socket"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqSubscribe, 2, "zmq socket, string"),
+    GVAR_FUNC_TABLE_ENTRY("zmqgap.c", ZmqUnsubscribe, 2, "zmq socket, string"),
+    { 0 }
 };
 
 /******************************************************************************
@@ -603,6 +609,7 @@ static Int InitKernel ( StructInitInfo *module )
 {
     /* init filters and functions                                          */
     InitHdlrFuncsFromTable( GVarFuncs );
+    ImportGVarFromLibrary( "TYPE_ZMQ_SOCKET", &TYPE_ZMQ_SOCKET );
 //    DeclareGVar(&TYPE_ZMQ_SOCKETGVar, "TYPE_ZMQ_SOCKET");
 
     /* return success                                                      */
