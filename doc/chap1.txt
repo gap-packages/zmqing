@@ -1,0 +1,12 @@
+  
+  [1X1 [33X[0;0Yzmqing automatic generated documentation[133X[101X
+  
+  
+  [1X1.1 [33X[0;0Yzmqing automatic generated documentation of global functions[133X[101X
+  
+  [1X1.1-1 zmqing_Example[101X
+  
+  [29X[2Xzmqing_Example[102X( [3Xarg[103X ) [32X function
+  
+  [33X[0;0YInsert documentation for you function here[133X
+  

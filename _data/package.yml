@@ -5,13 +5,13 @@ description: ZMQ bindings for GAP
 
 authors:
     - name: Markus Pfeiffer
-      url: http://www.morphism.de/~markusp/
+      url: https://www.morphism.de/~markusp/
     - name: Reimer Behrends
-      url: TODO
+      url: http://www.mathematik.uni-kl.de/en/agag/members/scientific-assistants/dr-reimer-behrends/
 
 maintainers:
     - name: Markus Pfeiffer
-      url: http://www.morphism.de/~markusp/
+      url: https://www.morphism.de/~markusp/
 
 GAP: ">= 4.8"
 
