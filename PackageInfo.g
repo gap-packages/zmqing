@@ -19,7 +19,7 @@ Persons := [
     IsMaintainer := true,
     FirstNames := "Markus",
     LastName := "Pfeiffer",
-    WWWHome := "http://www.morphism.de/~markusp/",
+    WWWHome := "https://www.morphism.de/~markusp/",
     Email := "markus.pfeiffer@st-andrews.ac.uk",
     PostalAddress := Concatenation(
                "School of Computer Science\n",
@@ -35,7 +35,7 @@ Persons := [
     IsMaintainer := false,
     FirstNames := "Reimer",
     LastName := "Behrends",
-    WWWHome := "TODO",
+    WWWHome := "http://www.mathematik.uni-kl.de/en/agag/members/scientific-assistants/dr-reimer-behrends/",
     Email := "rbehrends@gmail.com",
     PostalAddress := "TODO",
     Place := "TODO",
